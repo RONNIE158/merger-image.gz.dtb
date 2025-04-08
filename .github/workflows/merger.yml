@@ -3,9 +3,9 @@ name: Merge Image.gz + DTB
 on:
   push:
     paths:
-      - 'kernel/arch/arm64/boot/Image.gz'
-      - 'kernel/arch/arm64/boot/dts/qcom/*.dtb'
-      - '.github/workflows/merge_image_dtb.yml'
+      - '.github/Image.gz'
+      - '.github*.dtb'
+      - '.github/workflows/merger.yml'
 
 jobs:
   merge_kernel:

@@ -3,29 +3,29 @@
 # Untuk: Poco F1 (beryllium), LineageOS 21 (system_ext)
 # Output: Image.gz-dtb + AnyKernel3 flashable zip
 
-name: Build-Non-GKI-Kernel
+name: Port-GKI-5.4-to-Non-GKI
 
 on:
   workflow_dispatch:
     inputs:
       gki_repo:
-        description: 'Repo kernel GKI 5.4'
+        description: 'URL repositori GKI Kernel 5.4'
         required: true
-        default: 'https://github.com/official-devs/gki-kernel-5.4'
+        default: 'https://github.com/pundiramit/linux'
       gki_branch:
-        description: 'Branch kernel GKI'
+        description: 'beryllium-mainline'
         required: false
-        default: 'main'
-      legacy_repo:
-        description: 'Repo kernel 4.9 (ambil dtb & defconfig)'
+        default: 'beryllium-mainline'
+      non_gki_repo:
+        description: 'URL repositori kernel 4.9 (sumber DTB dan defconfig)'
         required: true
-        default: 'https://github.com/official-devs/kernel-4.9'
-      legacy_branch:
-        description: 'Branch kernel 4.9'
+        default: 'https://github.com/RONNIE158/android_kernel_xiaomi_sdm845'
+      non_gki_branch:
+        description: 'lineage-21'
         required: false
-        default: 'main'
+        default: 'lineage-21'
       defconfig_path:
-        description: 'Path defconfig dari repo kernel 4.9'
+        description: 'Path relatif ke file defconfig di repo kernel 4.9 (contoh: arch/arm64/configs/beryllium_defconfig)'
         required: true
 
 jobs:

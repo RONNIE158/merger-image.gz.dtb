@@ -14,17 +14,17 @@ on:
       gki_repo:
         description: 'URL repositori GKI Kernel 5.4'
         required: true
-        default: 'https://github.com/official-devs/gki-kernel-5.4'
+        default: 'https://github.com/pundiramit/linux'
       gki_branch:
-        description: 'Branch kernel GKI'
+        description: 'beryllium-mainline'
         required: false
         default: 'main'
       non_gki_repo:
         description: 'URL repositori kernel 4.9 (sumber DTB dan defconfig)'
         required: true
-        default: 'https://github.com/official-devs/kernel-4.9'
+        default: 'https://github.com/RONNIE158/android_kernel_xiaomi_sdm845'
       non_gki_branch:
-        description: 'Branch kernel 4.9'
+        description: 'lineage-21'
         required: false
         default: 'main'
       defconfig_path:
@@ -75,7 +75,7 @@ jobs:
           make O=out -j$(nproc) CC=clang Image.gz-dtb
 
       - name: Upload Image.gz-dtb
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: kernel-image-gz-dtb
           path: gki-kernel/out/arch/arm64/boot/Image.gz-dtb

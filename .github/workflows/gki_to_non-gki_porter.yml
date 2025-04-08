@@ -1,10 +1,9 @@
-# GitHub Actions Workflow: Port GKI 5.4 to Non-GKI Kernel (DTB 4.9)
-# ================================================================
+# GitHub Actions Workflow: Port GKI 5.4 to Non-GKI Kernel (DTB & defconfig dari kernel 4.9)
+# ==========================================================================================
 # Fungsi:
 # - Clone kernel GKI 5.4 dari repositori GitHub
-# - Clone DTB dari kernel 4.9 dari repositori GitHub
-# - Gabungkan dan modifikasi menjadi kernel non-GKI
-# - Build kernel pakai toolchain Clang
+# - Clone DTB dan device_defconfig dari kernel 4.9 source tree lain
+# - Build kernel non-GKI dengan DTB dan defconfig dari kernel 4.9
 # - Upload hasil: Image.gz-dtb
 
 name: Port-GKI-5.4-to-Non-GKI
@@ -15,46 +14,47 @@ on:
       gki_repo:
         description: 'URL repositori GKI Kernel 5.4'
         required: true
-        default: 'https://github.com/pundiramit/linux'
-      dtb_repo:
-        description: 'URL repositori DTB Kernel 4.9'
-        required: true
-        default: 'https://github.com/RONNIE158/android_kernel_xiaomi_sdm845'
+        default: 'https://github.com/official-devs/gki-kernel-5.4'
       gki_branch:
         description: 'Branch kernel GKI'
         required: false
-        default: 'lineage-21'
-      dtb_branch:
-        description: 'Branch kernel DTB 4.9'
+        default: 'main'
+      non_gki_repo:
+        description: 'URL repositori kernel 4.9 (sumber DTB dan defconfig)'
+        required: true
+        default: 'https://github.com/official-devs/kernel-4.9'
+      non_gki_branch:
+        description: 'Branch kernel 4.9'
         required: false
-        default: 'beryllium-mainline'
-      device_defconfig:
-        description: 'File defconfig device (contoh: beryllium_defconfig)'
+        default: 'main'
+      defconfig_path:
+        description: 'Path relatif ke file defconfig di repo kernel 4.9 (contoh: arch/arm64/configs/beryllium_defconfig)'
         required: true
 
 jobs:
   build:
-    name: Build Kernel Non-GKI
+    name: Port & Build Non-GKI Kernel
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout GKI Kernel
+      - name: Clone GKI Kernel Source
         run: |
           git clone --depth=1 --branch "${{ github.event.inputs.gki_branch }}" "${{ github.event.inputs.gki_repo }}" gki-kernel
 
-      - name: Checkout DTB Source (Kernel 4.9)
+      - name: Clone Kernel 4.9 Source (defconfig & DTB)
         run: |
-          git clone --depth=1 --branch "${{ github.event.inputs.dtb_branch }}" "${{ github.event.inputs.dtb_repo }}" dtb-4.9
+          git clone --depth=1 --branch "${{ github.event.inputs.non_gki_branch }}" "${{ github.event.inputs.non_gki_repo }}" kernel-4.9
 
       - name: Install Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y bc build-essential libncurses5-dev bison flex libssl-dev libelf-dev curl git gcc make clang lld dtc
 
-      - name: Inject DTB 4.9 ke GKI Source
+      - name: Copy DTB & defconfig dari kernel 4.9 ke GKI
         run: |
           mkdir -p gki-kernel/arch/arm64/boot/dts/qcom
-          cp -r dtb-4.9/* gki-kernel/arch/arm64/boot/dts/qcom/
+          cp -r kernel-4.9/arch/arm64/boot/dts/qcom/* gki-kernel/arch/arm64/boot/dts/qcom/
+          cp kernel-4.9/${{ github.event.inputs.defconfig_path }} gki-kernel/arch/arm64/configs/
 
       - name: Download Clang Toolchain
         run: |
@@ -70,11 +70,12 @@ jobs:
           export CROSS_COMPILE=aarch64-linux-gnu-
           export PATH=$GITHUB_WORKSPACE/toolchains/clang-r416183b/bin:$PATH
 
-          make O=out ${{ github.event.inputs.device_defconfig }} CC=clang
+          defconfig_file=$(basename "${{ github.event.inputs.defconfig_path }}")
+          make O=out $defconfig_file CC=clang
           make O=out -j$(nproc) CC=clang Image.gz-dtb
 
       - name: Upload Image.gz-dtb
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: kernel-image-gz-dtb
           path: gki-kernel/out/arch/arm64/boot/Image.gz-dtb

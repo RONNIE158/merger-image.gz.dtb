@@ -1,0 +1,103 @@
+# GitHub Actions Workflow: Build Non-GKI Kernel dari GKI Kernel 5.4
+# Dengan DTB & defconfig dari Kernel 4.9
+# Untuk: Poco F1 (beryllium), LineageOS 21 (system_ext)
+# Output: Image.gz-dtb + AnyKernel3 flashable zip
+
+name: Build-Non-GKI-Kernel
+
+on:
+  workflow_dispatch:
+    inputs:
+      gki_repo:
+        description: 'Repo kernel GKI 5.4'
+        required: true
+        default: 'https://github.com/official-devs/gki-kernel-5.4'
+      gki_branch:
+        description: 'Branch kernel GKI'
+        required: false
+        default: 'main'
+      legacy_repo:
+        description: 'Repo kernel 4.9 (ambil dtb & defconfig)'
+        required: true
+        default: 'https://github.com/official-devs/kernel-4.9'
+      legacy_branch:
+        description: 'Branch kernel 4.9'
+        required: false
+        default: 'main'
+      defconfig_path:
+        description: 'Path defconfig dari repo kernel 4.9'
+        required: true
+
+jobs:
+  build:
+    name: Build Non-GKI Kernel
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone GKI Source
+        run: |
+          git clone --depth=1 --branch "${{ github.event.inputs.gki_branch }}" "${{ github.event.inputs.gki_repo }}" gki
+
+      - name: Clone Legacy Kernel Source
+        run: |
+          git clone --depth=1 --branch "${{ github.event.inputs.legacy_branch }}" "${{ github.event.inputs.legacy_repo }}" legacy
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bc build-essential libncurses5-dev bison flex libssl-dev libelf-dev git lld zip unzip curl
+
+      - name: Download Prebuilt Toolchains (LineageOS only)
+        run: |
+          mkdir -p toolchains && cd toolchains
+          git clone --depth=1 -b lineage-20.0 https://github.com/LineageOS/android_prebuilts_clang_kernel_linux-x86_clang-r416183b clang
+          git clone --depth=1 -b lineage-19.1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9 aarch64
+          git clone --depth=1 -b lineage-19.1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9 arm
+
+      - name: Download Prebuilt DTC Binary
+        run: |
+          curl -LO https://github.com/cran/dtc-prebuilt/releases/download/v1.6.0/dtc-linux-x86_64
+          chmod +x dtc-linux-x86_64
+          sudo mv dtc-linux-x86_64 /usr/local/bin/dtc
+
+      - name: Inject DTB & Defconfig dari Kernel 4.9
+        run: |
+          mkdir -p gki/arch/arm64/boot/dts/qcom
+          cp -r legacy/arch/arm64/boot/dts/qcom/* gki/arch/arm64/boot/dts/qcom/
+          cp legacy/${{ github.event.inputs.defconfig_path }} gki/arch/arm64/configs/
+
+      - name: Build Kernel
+        run: |
+          cd gki
+          export ARCH=arm64
+          export SUBARCH=arm64
+          export CLANG_TRIPLE=aarch64-linux-gnu-
+          export CROSS_COMPILE=$GITHUB_WORKSPACE/toolchains/aarch64/bin/aarch64-linux-android-
+          export CROSS_COMPILE_ARM32=$GITHUB_WORKSPACE/toolchains/arm/bin/arm-linux-androideabi-
+          export PATH=$GITHUB_WORKSPACE/toolchains/clang/bin:$PATH
+
+          defconfig_file=$(basename "${{ github.event.inputs.defconfig_path }}")
+          make O=out $defconfig_file CC=clang
+          make O=out -j$(nproc) CC=clang
+
+          cd out/arch/arm64/boot
+          gzip -c Image > Image.gz
+          cat Image.gz dtb/qcom/*.dtb > Image.gz-dtb
+
+      - name: Clone AnyKernel3
+        run: |
+          git clone --depth=1 https://github.com/osm0sis/AnyKernel3 anykernel
+
+      - name: Package Flashable Zip
+        run: |
+          cp gki/out/arch/arm64/boot/Image.gz-dtb anykernel/
+          cd anykernel
+          zip -r9 ../Non-GKI-Kernel-PocoF1.zip *
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: kernel-build-artifacts
+          path: |
+            gki/out/arch/arm64/boot/Image.gz-dtb
+            Non-GKI-Kernel-PocoF1.zip

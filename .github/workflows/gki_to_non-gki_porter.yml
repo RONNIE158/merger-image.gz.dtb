@@ -18,7 +18,7 @@ on:
       gki_branch:
         description: 'beryllium-mainline'
         required: false
-        default: 'main'
+        default: 'beryllium-mainline'
       non_gki_repo:
         description: 'URL repositori kernel 4.9 (sumber DTB dan defconfig)'
         required: true
@@ -26,7 +26,7 @@ on:
       non_gki_branch:
         description: 'lineage-21'
         required: false
-        default: 'main'
+        default: 'lineage-21'
       defconfig_path:
         description: 'Path relatif ke file defconfig di repo kernel 4.9 (contoh: arch/arm64/configs/beryllium_defconfig)'
         required: true

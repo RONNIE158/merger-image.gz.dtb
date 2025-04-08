@@ -16,7 +16,30 @@
 
 name: Port GKI 5.4 to Non-GKI (From External Repos)
 
-on: workflow_dispatch: inputs: gki_repo: description: 'URL repositori GKI Kernel 5.4' required: true default: 'https://github.com/official-devs/gki-kernel-5.4' dtb_repo: description: 'URL repositori DTB Kernel 4.9' required: true default: 'https://github.com/official-devs/kernel-dtb-4.9' gki_branch: description: 'Branch kernel GKI' required: false default: 'main' dtb_branch: description: 'Branch kernel DTB 4.9' required: false default: 'main' device_defconfig: description: 'Nama file defconfig device (contoh: beryllium_defconfig)' required: true
+name: Port-GKI-5.4-to-Non-GKI
+
+on:
+  workflow_dispatch:
+    inputs:
+      gki_repo:
+        description: 'URL repositori GKI Kernel 5.4'
+        required: true
+        default: 'https://github.com/official-devs/gki-kernel-5.4'
+      dtb_repo:
+        description: 'URL repositori DTB Kernel 4.9'
+        required: true
+        default: 'https://github.com/official-devs/kernel-dtb-4.9'
+      gki_branch:
+        description: 'Branch kernel GKI'
+        required: false
+        default: 'main'
+      dtb_branch:
+        description: 'Branch kernel DTB 4.9'
+        required: false
+        default: 'main'
+      device_defconfig:
+        description: 'Nama file defconfig device (contoh: beryllium_defconfig)'
+        required: true
 
 jobs: port_kernel: name: Port & Build Kernel runs-on: ubuntu-latest
 

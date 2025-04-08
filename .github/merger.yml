@@ -1,0 +1,35 @@
+name: Merge Image.gz + DTB
+
+on:
+  push:
+    paths:
+      - 'kernel/arch/arm64/boot/Image.gz'
+      - 'kernel/arch/arm64/boot/dts/qcom/*.dtb'
+      - '.github/workflows/merge_image_dtb.yml'
+
+jobs:
+  merge_kernel:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Merge Image.gz + DTB
+        run: |
+          IMAGE="kernel/arch/arm64/boot/Image.gz"
+          DTB="kernel/arch/arm64/boot/dts/qcom/device.dtb"
+          OUTPUT="Image.gz-dtb"
+
+          if [ -f "$IMAGE" ] && [ -f "$DTB" ]; then
+            cat "$IMAGE" "$DTB" > "$OUTPUT"
+            echo "Merged to $OUTPUT"
+          else
+            echo "Image.gz or DTB not found!" && exit 1
+          fi
+
+      - name: Upload merged Image.gz-dtb as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: merged-image-dtb
+          path: Image.gz-dtb

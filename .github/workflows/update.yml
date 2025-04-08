@@ -27,6 +27,7 @@ on:
       defconfig_path:
         description: 'Path relatif ke file defconfig di repo kernel 4.9 (contoh: arch/arm64/configs/beryllium_defconfig)'
         required: true
+        default: 'arch/arm64/configs/beryllium_defconfig'
 
 jobs:
   build:

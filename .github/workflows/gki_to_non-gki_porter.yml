@@ -15,19 +15,19 @@ on:
       gki_repo:
         description: 'URL repositori GKI Kernel 5.4'
         required: true
-        default: 'https://github.com/official-devs/gki-kernel-5.4'
+        default: 'https://github.com/pundiramit/linux'
       dtb_repo:
         description: 'URL repositori DTB Kernel 4.9'
         required: true
-        default: 'https://github.com/official-devs/kernel-dtb-4.9'
+        default: 'https://github.com/RONNIE158/android_kernel_xiaomi_sdm845'
       gki_branch:
         description: 'Branch kernel GKI'
         required: false
-        default: 'main'
+        default: 'lineageos-21'
       dtb_branch:
         description: 'Branch kernel DTB 4.9'
         required: false
-        default: 'main'
+        default: 'beryllium-mainline'
       device_defconfig:
         description: 'File defconfig device (contoh: beryllium_defconfig)'
         required: true

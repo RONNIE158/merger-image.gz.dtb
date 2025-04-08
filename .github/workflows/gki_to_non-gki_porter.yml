@@ -1,8 +1,24 @@
+GitHub Actions Workflow: Port GKI 5.4 to Non-GKI Kernel
+
+------------------------------------------------------
+
+Fungsi:
+
+- Clone kernel GKI 5.4 dari repositori lain
+
+- Clone DTB dari kernel 4.9 dari repositori lain
+
+- Gabungkan dan patch menjadi kernel non-GKI
+
+- Kompilasi kernel menggunakan toolchain clang
+
+- Upload hasil Image.gz-dtb
+
 name: Port GKI 5.4 to Non-GKI (From External Repos)
 
-on: workflow_dispatch: inputs: gki_repo: description: 'URL of GKI Kernel 5.4 repo' required: true default: 'https://github.com/official-devs/gki-kernel-5.4' dtb_repo: description: 'URL of DTB Source Tree 4.9 repo' required: true default: 'https://github.com/official-devs/kernel-dtb-4.9' gki_branch: description: 'Branch of GKI kernel' required: false default: 'main' dtb_branch: description: 'Branch of DTB source' required: false default: 'main' device_defconfig: description: 'Name of the device defconfig file (e.g. beryllium_defconfig)' required: true
+on: workflow_dispatch: inputs: gki_repo: description: 'URL repositori GKI Kernel 5.4' required: true default: 'https://github.com/official-devs/gki-kernel-5.4' dtb_repo: description: 'URL repositori DTB Kernel 4.9' required: true default: 'https://github.com/official-devs/kernel-dtb-4.9' gki_branch: description: 'Branch kernel GKI' required: false default: 'main' dtb_branch: description: 'Branch kernel DTB 4.9' required: false default: 'main' device_defconfig: description: 'Nama file defconfig device (contoh: beryllium_defconfig)' required: true
 
-jobs: port_kernel: runs-on: ubuntu-latest
+jobs: port_kernel: name: Port & Build Kernel runs-on: ubuntu-latest
 
 steps:
   - name: Clone GKI Kernel Source
@@ -13,21 +29,21 @@ steps:
     run: |
       git clone --depth=1 --branch "${{ github.event.inputs.dtb_branch }}" "${{ github.event.inputs.dtb_repo }}" dtb-source-4.9
 
-  - name: Install Dependencies
+  - name: Install Build Dependencies
     run: |
       sudo apt-get update
       sudo apt-get install -y dtc bc build-essential libncurses5-dev bison flex libssl-dev libelf-dev curl git gcc make clang lld
 
-  - name: Inject DTB Files
+  - name: Inject DTB Files ke Kernel Source
     run: |
       cp -r dtb-source-4.9/* gki-kernel/arch/arm64/boot/dts/qcom/
 
-  - name: Setup Toolchain
+  - name: Download Toolchain Clang
     run: |
       mkdir -p toolchains
       curl -L https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master-kernel/clang-r416183b.tar.gz?format=TEXT | base64 -d | tar -xz -C toolchains
 
-  - name: Build Kernel
+  - name: Compile Kernel
     run: |
       cd gki-kernel
       export ARCH=arm64
@@ -36,10 +52,13 @@ steps:
       export CLANG_TRIPLE=aarch64-linux-gnu-
       export PATH=$GITHUB_WORKSPACE/toolchains/clang-r416183b/bin:$PATH
 
+      # Load defconfig
       make O=out ${{ github.event.inputs.device_defconfig }} CC=clang
+
+      # Build Image.gz-dtb
       make O=out -j$(nproc) CC=clang Image.gz-dtb
 
-  - name: Upload Final Image.gz-dtb
+  - name: Upload Hasil Image.gz-dtb
     uses: actions/upload-artifact@v3
     with:
       name: compiled-image-gz-dtb

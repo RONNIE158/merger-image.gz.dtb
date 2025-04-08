@@ -17,8 +17,8 @@ jobs:
 
       - name: Merge Image.gz + DTB
         run: |
-          IMAGE="kernel/arch/arm64/boot/Image.gz"
-          DTB="kernel/arch/arm64/boot/dts/qcom/device.dtb"
+          IMAGE=".github/Image.gz"
+          DTB=".github/beryllium.dtb"
           OUTPUT="Image.gz-dtb"
 
           if [ -f "$IMAGE" ] && [ -f "$DTB" ]; then

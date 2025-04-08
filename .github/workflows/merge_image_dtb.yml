@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - 'kernel/arch/arm64/boot/Image.gz'
-      - 'kernel/arch/arm64/boot/dts/qcom/*.dtb'
+      - 'kernel/arch/arm64/boot/dts/*.dtb'
       - '.github/workflows/merge_image_dtb.yml'
 
 jobs:

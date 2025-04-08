@@ -23,7 +23,7 @@ on:
       gki_branch:
         description: 'Branch kernel GKI'
         required: false
-        default: 'lineageos-21'
+        default: 'lineage-21'
       dtb_branch:
         description: 'Branch kernel DTB 4.9'
         required: false

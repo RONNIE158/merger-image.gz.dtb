@@ -48,7 +48,7 @@ jobs:
       - name: Install Dependencies (tanpa dtc)
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc build-essential libncurses5-dev bison flex libssl-dev libelf-dev curl git gcc make clang lld
+          sudo apt-get install -y bc build-essential libncurses5-dev bison flex libssl-dev libelf-dev curl git gcc make lld
 
       - name: Download prebuilt DTC binary
         run: |
@@ -57,18 +57,19 @@ jobs:
           chmod +x dtc-linux-x86_64
           sudo mv dtc-linux-x86_64 /usr/local/bin/dtc
 
+      - name: Download Prebuilt Toolchains (Clang + GCC)
+        run: |
+          mkdir -p toolchains && cd toolchains
+
+          git clone --depth=1 -b lineage-20.0 https://github.com/LineageOS/android_prebuilts_clang_kernel_linux-x86_clang-r416183b clang
+          git clone --depth=1 -b lineage-19.1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9 aarch64
+          git clone --depth=1 -b lineage-19.1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9 arm
+
       - name: Copy DTB & defconfig dari kernel 4.9 ke GKI
         run: |
           mkdir -p gki-kernel/arch/arm64/boot/dts/qcom
           cp -r kernel-4.9/arch/arm64/boot/dts/qcom/* gki-kernel/arch/arm64/boot/dts/qcom/
           cp kernel-4.9/${{ github.event.inputs.defconfig_path }} gki-kernel/arch/arm64/configs/
-
-      - name: Download Clang Toolchain
-        run: |
-          mkdir -p toolchains && cd toolchains
-          curl -LO https://github.com/ClangBuiltLinux/tc-build/releases/download/20231214/clang+llvm-17.0.6-x86_64-linux-gnu.tar.xz
-          tar -xf clang+llvm-17.0.6-x86_64-linux-gnu.tar.xz
-          mv clang+llvm-17.0.6-x86_64-linux-gnu clang
 
       - name: Build Kernel Image.gz-dtb
         run: |
@@ -76,7 +77,8 @@ jobs:
           export ARCH=arm64
           export SUBARCH=arm64
           export CLANG_TRIPLE=aarch64-linux-gnu-
-          export CROSS_COMPILE=aarch64-linux-gnu-
+          export CROSS_COMPILE=$GITHUB_WORKSPACE/toolchains/aarch64/bin/aarch64-linux-android-
+          export CROSS_COMPILE_ARM32=$GITHUB_WORKSPACE/toolchains/arm/bin/arm-linux-androideabi-
           export PATH=$GITHUB_WORKSPACE/toolchains/clang/bin:$PATH
 
           defconfig_file=$(basename "${{ github.event.inputs.defconfig_path }}")

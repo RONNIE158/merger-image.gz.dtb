@@ -3,7 +3,7 @@
 # Untuk: Poco F1 (beryllium), LineageOS 21 (system_ext)
 # Output: Image.gz-dtb + AnyKernel3 flashable zip
 
-name: Port-GKI-5.4-to-Non-GKI
+name: Port-GKI-5.4-to-Non-GKI-update
 
 on:
   workflow_dispatch:

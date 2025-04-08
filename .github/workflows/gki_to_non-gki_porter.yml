@@ -65,8 +65,10 @@ jobs:
 
       - name: Download Clang Toolchain
         run: |
-          mkdir -p toolchains
-          curl -L https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master-kernel/clang-r416183b.tar.gz?format=TEXT | base64 -d | tar -xz -C toolchains
+          mkdir -p toolchains && cd toolchains
+          curl -LO https://github.com/ClangBuiltLinux/tc-build/releases/download/20231214/clang+llvm-17.0.6-x86_64-linux-gnu.tar.xz
+          tar -xf clang+llvm-17.0.6-x86_64-linux-gnu.tar.xz
+          mv clang+llvm-17.0.6-x86_64-linux-gnu clang
 
       - name: Build Kernel Image.gz-dtb
         run: |
@@ -75,7 +77,7 @@ jobs:
           export SUBARCH=arm64
           export CLANG_TRIPLE=aarch64-linux-gnu-
           export CROSS_COMPILE=aarch64-linux-gnu-
-          export PATH=$GITHUB_WORKSPACE/toolchains/clang-r416183b/bin:$PATH
+          export PATH=$GITHUB_WORKSPACE/toolchains/clang/bin:$PATH
 
           defconfig_file=$(basename "${{ github.event.inputs.defconfig_path }}")
           make O=out $defconfig_file CC=clang

@@ -45,10 +45,17 @@ jobs:
         run: |
           git clone --depth=1 --branch "${{ github.event.inputs.non_gki_branch }}" "${{ github.event.inputs.non_gki_repo }}" kernel-4.9
 
-      - name: Install Dependencies
+      - name: Install Dependencies (tanpa dtc)
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc build-essential libncurses5-dev bison flex libssl-dev libelf-dev curl git gcc make clang lld dtc
+          sudo apt-get install -y bc build-essential libncurses5-dev bison flex libssl-dev libelf-dev curl git gcc make clang lld
+
+      - name: Download prebuilt DTC binary
+        run: |
+          mkdir -p dtc-bin && cd dtc-bin
+          curl -LO https://github.com/cran/dtc-prebuilt/releases/download/v1.6.0/dtc-linux-x86_64
+          chmod +x dtc-linux-x86_64
+          sudo mv dtc-linux-x86_64 /usr/local/bin/dtc
 
       - name: Copy DTB & defconfig dari kernel 4.9 ke GKI
         run: |

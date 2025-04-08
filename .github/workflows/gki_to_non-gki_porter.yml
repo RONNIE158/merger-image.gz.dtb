@@ -1,7 +1,5 @@
 GitHub Actions Workflow: Port GKI 5.4 to Non-GKI Kernel
 
-------------------------------------------------------
-
 Fungsi:
 
 - Clone kernel GKI 5.4 dari repositori lain

@@ -1,16 +1,18 @@
-GitHub Actions Workflow: Port GKI 5.4 to Non-GKI Kernel
+#GitHub Actions Workflow: Port GKI 5.4 to Non-GKI Kernel
 
-Fungsi:
+#------------------------------------------------------
 
-- Clone kernel GKI 5.4 dari repositori lain
+#Fungsi:
 
-- Clone DTB dari kernel 4.9 dari repositori lain
+#- Clone kernel GKI 5.4 dari repositori lain
 
-- Gabungkan dan patch menjadi kernel non-GKI
+#- Clone DTB dari kernel 4.9 dari repositori lain
 
-- Kompilasi kernel menggunakan toolchain clang
+#- Gabungkan dan patch menjadi kernel non-GKI
 
-- Upload hasil Image.gz-dtb
+#- Kompilasi kernel menggunakan toolchain clang
+
+#- Upload hasil Image.gz-dtb
 
 name: Port GKI 5.4 to Non-GKI (From External Repos)
 
@@ -57,7 +59,7 @@ steps:
       make O=out -j$(nproc) CC=clang Image.gz-dtb
 
   - name: Upload Hasil Image.gz-dtb
-    uses: actions/upload-artifact@v3
+    uses: actions/upload-artifact@v4
     with:
       name: compiled-image-gz-dtb
       path: gki-kernel/out/arch/arm64/boot/Image.gz-dtb

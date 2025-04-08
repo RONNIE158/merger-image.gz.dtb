@@ -14,7 +14,7 @@ on:
         default: 'https://github.com/pundiramit/linux'
       gki_branch:
         description: 'beryllium-mainline'
-        required: false
+        required: true
         default: 'beryllium-mainline'
       non_gki_repo:
         description: 'URL repositori kernel 4.9 (sumber DTB dan defconfig)'
@@ -22,7 +22,7 @@ on:
         default: 'https://github.com/RONNIE158/android_kernel_xiaomi_sdm845'
       non_gki_branch:
         description: 'lineage-21'
-        required: false
+        required: true
         default: 'lineage-21'
       defconfig_path:
         description: 'Path relatif ke file defconfig di repo kernel 4.9 (contoh: arch/arm64/configs/beryllium_defconfig)'
@@ -41,7 +41,7 @@ jobs:
 
       - name: Clone Legacy Kernel Source
         run: |
-          git clone --depth=1 --branch "${{ github.event.inputs.legacy_branch }}" "${{ github.event.inputs.legacy_repo }}" legacy
+          git clone --depth=1 --branch "${{ github.event.inputs.non_gki_branch }}" "${{ github.event.inputs.non_gki_repo }}" legacy
 
       - name: Install Dependencies
         run: |
